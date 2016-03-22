@@ -1,25 +1,22 @@
-digitizer <- function(n = NA, files = tk_choose.files(), mode = c('contour',
-						'perpendiculars'), title = T, randomOrder = T,
-						closeDev = T, col = "red", lines = T, rmBroken = T,
-						savePlot = F)
+digitizer <- function(n = NA, files = tk_choose.files(), mode = c('contour', 'perpendiculars'), title = T, randomOrder = T, closeDev = T, col = "red", lines = T, rmBroken = T, savePlot = F)
 # Digitizes landmarks on graphic file(s).
-# n				Maximum required number of landmarks or number of
-#				perpendiculars to be drawn. If not specified, press the right
-#				mouse button to stop.
-# mode			'contour': nothing is drawn, you're asked to put landmarks by
-#				locator; 'perpendiculars': you're asked to draw a line to which
-#				a specified number (n) of perpendiculars will be drawn. You may
-#				then put landmarks on the intersections of perpendiculars with
-#				some countour.
-# title			Whether or not to title each picture.
+# n		Maximum required number of landmarks or number of
+#		perpendiculars to be drawn. If not specified, press the right
+#		mouse button to stop.
+# mode		'contour': nothing is drawn, you're asked to put landmarks by
+#		locator; 'perpendiculars': you're asked to draw a line to which
+#		a specified number (n) of perpendiculars will be drawn. You may
+#		then put landmarks on the intersections of perpendiculars with
+#		some countour.
+# title		Whether or not to title each picture.
 # randomOrder	Should pictures be given in random order to avoid the
-#				influence of learning?
-# closeDev		Close or not each picture after digitizing.
+#		influence of learning?
+# closeDev	Close or not each picture after digitizing.
 # col, lines	Are transferred to 'locator'
-# rmBroken		If TRUE, elements that contain one point only would be removed
-#				from the resulting list.
-#				This way inconvenient pictures may be treated.
-# savePlot		Save a copy of each picture with landmarks drawn or not?
+# rmBroken	If TRUE, elements that contain one point only would be removed
+#		from the resulting list.
+#		This way inconvenient pictures may be treated.
+# savePlot	Save a copy of each picture with landmarks drawn or not?
 {
 	sapply(c('readbitmap', 'grDevices', 'tcltk'), require, character = T)
 	if (randomOrder) files <- files[sample(m <- length(files), m)]
