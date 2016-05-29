@@ -21,9 +21,7 @@ importSM <- function(path, class = c('Opn', 'Out', 'Ldk'), panel = TRUE)
         extract(grep('<scaling[^.units]', .)) %>%
         sub('^.*>(.*)<.*$', '\\1', .) %>% #Leave only the number
         as.numeric
-      names(coo)[i] <-
-        parsed %>% extract(grep('<image.id', .)) %>%
-        gsub('[\t]?</?image.id>', '', .)
+      names(coo)[i] <- list.files(path)[i]
     }
   } else {
     for (i in 1:length(list.files(path))) {
@@ -46,9 +44,7 @@ importSM <- function(path, class = c('Opn', 'Out', 'Ldk'), panel = TRUE)
         extract(grep('<scaling[^.units]', .)) %>%
         sub('^.*>(.*)<.*$', '\\1', .) %>% #Leave only the number
         as.numeric
-      names(coo)[i] <-
-        parsed %>% extract(grep('<image.id', .)) %>%
-        gsub('[\t]?</?image.id>', '', .)
+      names(coo)[i] <- list.files(path)[i]
     }
   }
   Coo <- match.arg(class) %>% do.call(list(coo, fac = data.frame(unlist(scale))))
