@@ -1,54 +1,82 @@
-importSM <- function(path, class = c('Opn', 'Out', 'Ldk'), panel = TRUE)
+importSM <- function(path, class = c('Opn', 'Out', 'Ldk', 'Control'), scaled = T)
 {
   require(magrittr)
+  require(Momocs)
   class <- match.arg(class)
-  coo <- scale <- list()
+  coo <- list()
+  # Out and Opn ---------------------------------------------------------------
   if (grepl('O', class)) {
-    for (i in 1:length(list.files(path))) {
-      parsed <- list.files(path, full.names = T)[i] %>% readLines
-      coo.begin <- parsed %>% grep('<curves.pixel', .) + 1
-      coo.end <- parsed %>% grep('</curves.pixel', .) - 1
-      coo[[i]] <-
-        parsed[coo.begin:coo.end] %>%
-        gsub('^.*<.*>.*$', '', .) %>% #Removing separate curves
-        sub('^\\t*', '', .) %>% #Removing tabs at the beginning and at the end of the strings
-        strsplit('\t') %>%
-        unlist %>%
-        as.numeric %>%
-        matrix(length(.)/2, 2, byrow = T)
-      scale[i] <- 
-        parsed %>%
-        extract(grep('<scaling[^.units]', .)) %>%
-        sub('^.*>(.*)<.*$', '\\1', .) %>% #Leave only the number
-        as.numeric
-      names(coo)[i] <- list.files(path)[i]
+    if (scaled) {
+      xmltag <- '<curves.scaled'
+    } else {
+      xmltag <- '<curves.pixel'
     }
-  } else {
     for (i in 1:length(list.files(path))) {
       parsed <- list.files(path, full.names = T)[i] %>% readLines
-      coo.begin <- parsed %>% grep('<landmarks.pixel', .) + 1
-      coo.end <- parsed %>% grep('</landmarks.pixel', .) - 1
-      pre_ldk <-
-        parsed[coo.begin:coo.end] %>%
-        sub('^\\t*', '', .) %>% #Removing tabs at the beginning and at the end of the strings
-        strsplit('\t')
-      coo[[i]] <-
-        pre_ldk %>%
-        sapply(function(x) x[-1]) %>%
-        apply(1, as.numeric) %>%
-        set_rownames(pre_ldk %>% sapply(function(x) x[1])) %>%
-        set_colnames(c('x', 'y')) %>%
-        as.data.frame
-      scale[i] <- 
-        parsed %>%
-        extract(grep('<scaling[^.units]', .)) %>%
-        sub('^.*>(.*)<.*$', '\\1', .) %>% #Leave only the number
-        as.numeric
-      names(coo)[i] <- list.files(path)[i]
+      coo.begin <- parsed %>% grep(xmltag, .) + 1
+      coo.end <- parsed %>% grep(sub('<', '</', xmltag), .) - 1
+      tryCatch(
+        coo[[i]] <-
+          parsed[coo.begin:coo.end] %>%
+          gsub('^.*<.*>.*$', '', .) %>% #Removing separate curves
+          sub('^\\t*', '', .) %>%
+          strsplit('\t') %>%
+          unlist %>%
+          as.numeric %>%
+          matrix(length(.)/2, 2, byrow = T),
+        error = function(e) coo[[i]] <<- matrix(0, 1, 2)
+      )
+      names(coo)[i] <- list.files(path)[i] %>% sub('.txt', '', .)
+      # names(coo)[i] %<>% sub('-.*$', '', .)
     }
   }
-  Coo <- match.arg(class) %>% do.call(list(coo, fac = data.frame(unlist(scale))))
-  if (ncol(Coo$fac) != 0) names(Coo$fac) <- 'scale'
-  if (panel) panel(Coo)
-  return(Coo)
+  # Curves control points -----------------------------------------------------
+  if (class == 'Control') {
+    xmltag <- '<curves.control'
+    for (i in 1:length(list.files(path))) {
+      parsed <- list.files(path, full.names = T)[i] %>% readLines
+      coo.begin <- parsed %>% grep(xmltag, .) + 1
+      coo.end <- parsed %>% grep(sub('<', '</', xmltag), .) - 1
+      tryCatch(
+        coo[[i]] <-
+          parsed[coo.begin:coo.end] %>%
+          sub('^\\t*', '', .) %>%
+          strsplit('\t') %>%
+          unlist %>%
+          .[!grepl('<', .)] %>%
+          as.numeric %>%
+          matrix(length(.)/2, 2, byrow = T) %>%
+          unique,
+        error = function(e) coo[[i]] <<- matrix(0, 1, 2)
+      )
+      names(coo)[i] <- list.files(path)[i] %>% sub('.txt', '', .)
+      # names(coo)[i] %<>% sub('-.*$', '', .)
+    }
+  }
+  # Ldk -----------------------------------------------------------------------
+  if (class == 'Ldk') {
+    if (scaled) {
+      xmltag <- '<landmarks.scaled'
+    } else {
+      xmltag <- '<landmarks.pixel'
+    }
+    for (i in 1:length(list.files(path))) {
+      parsed <- list.files(path, full.names = T)[i] %>% readLines
+      coo.begin <- parsed %>% grep(xmltag, .) + 1
+      coo.end <- parsed %>% grep(sub('<', '</', xmltag), .) - 1
+      tryCatch(
+        coo[[i]] <-
+          parsed[coo.begin:coo.end] %>%
+          sub('^\\t*', '', .) %>%
+          strsplit('\t') %>%
+          lapply(function(x) as.numeric(x[-1])) %>%
+          unlist %>%
+          matrix(length(.)/2, 2, byrow = T),
+        error = function(e) coo[[i]] <<- matrix(0, 1, 2)
+      )
+      names(coo)[i] <- list.files(path)[i] %>% sub('.txt', '', .)
+      # names(coo)[i] %<>% sub('-.*$', '', .)
+    }
+  }
+  return(coo)
 }
