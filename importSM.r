@@ -27,7 +27,7 @@ importSM <- function(path, class = c('Opn', 'Out', 'Ldk', 'Control'), scaled = T
         error = function(e) coo[[i]] <<- matrix(0, 1, 2)
       )
       names(coo)[i] <- list.files(path)[i] %>% sub('.txt', '', .)
-      # names(coo)[i] %<>% sub('-.*$', '', .)
+      names(coo)[i] %<>% sub('-.*$', '', .)
     }
   }
   # Curves control points -----------------------------------------------------
@@ -50,7 +50,7 @@ importSM <- function(path, class = c('Opn', 'Out', 'Ldk', 'Control'), scaled = T
         error = function(e) coo[[i]] <<- matrix(0, 1, 2)
       )
       names(coo)[i] <- list.files(path)[i] %>% sub('.txt', '', .)
-      # names(coo)[i] %<>% sub('-.*$', '', .)
+      names(coo)[i] %<>% sub('-.*$', '', .)
     }
   }
   # Ldk -----------------------------------------------------------------------
@@ -75,7 +75,7 @@ importSM <- function(path, class = c('Opn', 'Out', 'Ldk', 'Control'), scaled = T
         error = function(e) coo[[i]] <<- matrix(0, 1, 2)
       )
       names(coo)[i] <- list.files(path)[i] %>% sub('.txt', '', .)
-      # names(coo)[i] %<>% sub('-.*$', '', .)
+      names(coo)[i] %<>% sub('-.*$', '', .)
     }
   }
   return(coo)
